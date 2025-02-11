@@ -2,19 +2,25 @@ import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import "./styles.css";
-
-// 1. Importamos o Leaflet e os arquivos de ícone
 import L from "leaflet";
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
 
-// 2. Ajustamos o ícone padrão do Leaflet
+// Ajustamos o ícone padrão do Leaflet
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl,
   iconUrl,
   shadowUrl,
+});
+
+// Criando o ícone de estacionamento
+const parkingIcon = new L.Icon({
+  iconUrl: "https://cdn4.iconfinder.com/data/icons/map-pins-2/256/13-512.png",
+  iconSize: [60, 60], // Tamanho do ícone
+  iconAnchor: [20, 40], // Ponto de ancoragem
+  popupAnchor: [0, -40],
 });
 
 function ObjectsMap() {
@@ -29,12 +35,10 @@ function ObjectsMap() {
         },
         (error) => {
           console.error("Erro ao obter localização:", error);
-          // Caso haja erro ou o usuário negue a permissão
           setPosition([51.505, -0.09]); // Posição padrão
         }
       );
     } else {
-      // Se o navegador não suportar Geolocalização
       setPosition([51.505, -0.09]); // Posição padrão
     }
   }, []);
@@ -50,8 +54,14 @@ function ObjectsMap() {
         attribution="&copy; OpenStreetMap contributors"
       />
 
+      {/* Marcador da posição do usuário */}
       <Marker position={position}>
         <Popup>Você está aqui</Popup>
+      </Marker>
+
+      {/* Marcador de vaga de estacionamento */}
+      <Marker position={[-19.53645306343535, -40.62907357525347]} icon={parkingIcon}>
+        <Popup>Vaga de Estacionamento</Popup>
       </Marker>
     </MapContainer>
   );
