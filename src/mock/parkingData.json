@@ -1,0 +1,28 @@
+[
+	{
+		"latitude": -19.536347573976016,
+		"longitude": -40.62884520237617,
+		"rua": "Santa Maria",
+		"vaga_1": "Ocupada",
+		"vaga_2": "Ocupada",
+		"vaga_3": "Ocupada",
+		"vaga_4": "Ocupada",
+		"vaga_5": "Ocupada",
+		"vaga_6": "Ocupada",
+		"vaga_7": "Ocupada",
+		"vaga_8": "Ocupada"
+	},
+	{
+		"latitude": -19.540123,
+		"longitude": -40.630456,
+		"rua": "Avenida Central",
+		"vaga_1": "Livre",
+		"vaga_2": "Livre",
+		"vaga_3": "Livre",
+		"vaga_4": "Ocupada",
+		"vaga_5": "Livre",
+		"vaga_6": "Ocupada",
+		"vaga_7": "Livre",
+		"vaga_8": "Livre"
+	}
+]
