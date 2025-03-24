@@ -13,7 +13,7 @@ export default function App() {
           {/* Substitua a URL abaixo pela imagem que deseja utilizar */}
           <img
             className="logo"
-            src="https://png.pngtree.com/png-clipart/20220524/ourlarge/pngtree-3d-pin-location-red-png-image_4720270.png"
+            src="https://cdn-icons-png.flaticon.com/512/1180/1180032.png"
             alt="Logo do Vacol"
           />
           Vacol
