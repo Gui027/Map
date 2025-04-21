@@ -16,9 +16,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl,
 });
 
-// Ícone personalizado para vagas de estacionamento
-const parkingIcon = new L.Icon({
-  iconUrl: "https://cdn4.iconfinder.com/data/icons/map-pins-2/256/13-512.png",
+// Ícones personalizados por status da vaga
+const greenIcon = new L.Icon({
+  iconUrl: "https://cdn4.iconfinder.com/data/icons/map-pins-2/256/13-512.png", // original
   iconSize: [40, 40],
   iconAnchor: [20, 40],
   popupAnchor: [0, -40],
@@ -26,9 +26,8 @@ const parkingIcon = new L.Icon({
 
 function ObjectsMap() {
   const [position, setPosition] = useState(null);
-  
+
   useEffect(() => {
-    // Obtém a localização do usuário
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
@@ -37,24 +36,53 @@ function ObjectsMap() {
         },
         () => {
           console.error("Erro ao obter localização");
-          setPosition([-19.53645306343535, -40.62907357525347]); // Posição padrão
+          setPosition([-19.53645306343535, -40.62907357525347]);
         }
       );
     } else {
-      setPosition([-19.53645306343535, -40.62907357525347]); // Posição padrão
+      setPosition([-19.53645306343535, -40.62907357525347]);
     }
   }, []);
 
-  if (!position) {
-    return <div>Carregando mapa...</div>;
-  }
+  if (!position) return <div>Carregando mapa...</div>;
 
-  // Filtra os estacionamentos que possuem pelo menos uma vaga livre
-  const availableParkingSpots = parkingData.filter((spot) =>
-    Object.entries(spot).some(
-      ([key, value]) => key.includes("vaga_") && value !== "Ocupada"
-    )
-  );
+  // Gerar todos os marcadores por vaga
+  const generateVagaMarkers = () => {
+    const markers = [];
+  
+    parkingData.forEach((spot, index) => {
+      const baseLat = spot.latitude;
+      const baseLng = spot.longitude;
+  
+      let count = 0;
+  
+      Object.entries(spot).forEach(([key, value]) => {
+        if (key.includes("vaga_") && value === "Livre") {
+          const offsetLat = 0.0001 * Math.cos(count);
+          const offsetLng = 0.0001 * Math.sin(count);
+  
+          markers.push(
+            <Marker
+              key={`${spot.rua}-${key}`}
+              position={[baseLat + offsetLat, baseLng + offsetLng]}
+              icon={greenIcon}
+            >
+              <Popup>
+                <strong>{spot.rua}</strong><br />
+                {key.replace("vaga_", "Vaga ")}:{" "}
+                <span style={{ color: "green" }}>Livre</span>
+              </Popup>
+            </Marker>
+          );
+  
+          count++;
+        }
+      });
+    });
+  
+    return markers;
+  };
+  
 
   return (
     <MapContainer center={position} zoom={15} className="map-container">
@@ -63,29 +91,13 @@ function ObjectsMap() {
         attribution="&copy; OpenStreetMap contributors"
       />
 
-      {/* Marcador da posição do usuário */}
+      {/* Posição do usuário */}
       <Marker position={position}>
         <Popup>Você está aqui</Popup>
       </Marker>
 
-      {/* Marcadores das vagas de estacionamento disponíveis */}
-      {availableParkingSpots.map((spot, index) => (
-        <Marker key={index} position={[spot.latitude, spot.longitude]} icon={parkingIcon}>
-          <Popup>
-            <strong>Rua:</strong> {spot.rua} <br />
-            <strong>Vagas:</strong>
-            <ul>
-              {Object.entries(spot)
-                .filter(([key, value]) => key.includes("vaga_"))
-                .map(([key, value]) => (
-                  <li key={key} style={{ color: value === "Ocupada" ? "red" : "green" }}>
-                    {key.replace("vaga_", "Vaga ")}: {value}
-                  </li>
-                ))}
-            </ul>
-          </Popup>
-        </Marker>
-      ))}
+      {/* Vagas individuais como marcadores */}
+      {generateVagaMarkers()}
     </MapContainer>
   );
 }
