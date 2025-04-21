@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import "./styles.css";
 
 // Import do componente do mapa via lazy-loading
-const ObjectsMap = React.lazy(() => import("./components/ObjectsMap"));
+import ObjectsMap from "./components/ObjectsMap";
 
 export default function App() {
   return (

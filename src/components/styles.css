@@ -1,6 +1,8 @@
 .map-container {
-    height: 70vh;
-    width: 70vw;
-    z-index: 2;
-  }
+  height: 70vh;
+  width: 90vw;
+  margin: auto;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+}
   

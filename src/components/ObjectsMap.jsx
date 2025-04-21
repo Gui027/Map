@@ -6,6 +6,7 @@ import L from "leaflet";
 import iconRetinaUrl from "leaflet/dist/images/marker-icon-2x.png";
 import iconUrl from "leaflet/dist/images/marker-icon.png";
 import shadowUrl from "leaflet/dist/images/marker-shadow.png";
+import api from "../services/api";
 import parkingData from "../mock/parkingData.json";
 
 // Ajuste do ícone padrão do Leaflet
@@ -16,9 +17,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl,
 });
 
-// Ícones personalizados por status da vaga
 const greenIcon = new L.Icon({
-  iconUrl: "https://cdn4.iconfinder.com/data/icons/map-pins-2/256/13-512.png", // original
+  iconUrl: "https://cdn4.iconfinder.com/data/icons/map-pins-2/256/13-512.png",
   iconSize: [40, 40],
   iconAnchor: [20, 40],
   popupAnchor: [0, -40],
@@ -26,41 +26,61 @@ const greenIcon = new L.Icon({
 
 function ObjectsMap() {
   const [position, setPosition] = useState(null);
+  const [data, setData] = useState([]);
 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          setPosition([latitude, longitude]);
-        },
-        () => {
-          console.error("Erro ao obter localização");
-          setPosition([-19.53645306343535, -40.62907357525347]);
+    // Localização do usuário
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setPosition([latitude, longitude]);
+      },
+      () => {
+        setPosition([-19.53645306343535, -40.62907357525347]);
+      }
+    );
+
+    // Função para buscar vagas da API
+    const fetchData = async () => {
+      try {
+        const response = await api.get("/status_vagas");
+        if (Array.isArray(response.data)) {
+          setData(response.data);
+        } else {
+          console.warn("Resposta inválida da API, usando mock.");
+          setData(parkingData);
         }
-      );
-    } else {
-      setPosition([-19.53645306343535, -40.62907357525347]);
-    }
+      } catch (error) {
+        console.error("Erro na API, usando mock:", error);
+        setData(parkingData);
+      }
+    };
+
+    fetchData(); // primeira chamada imediata
+
+    // Atualiza a cada 2 segundos
+    const interval = setInterval(() => {
+      fetchData();
+    }, 2000);
+
+    return () => clearInterval(interval); // limpa intervalo no unmount
   }, []);
 
   if (!position) return <div>Carregando mapa...</div>;
 
-  // Gerar todos os marcadores por vaga
   const generateVagaMarkers = () => {
     const markers = [];
-  
-    parkingData.forEach((spot, index) => {
+
+    data.forEach((spot) => {
       const baseLat = spot.latitude;
       const baseLng = spot.longitude;
-  
       let count = 0;
-  
+
       Object.entries(spot).forEach(([key, value]) => {
         if (key.includes("vaga_") && value === "Livre") {
           const offsetLat = 0.0001 * Math.cos(count);
           const offsetLng = 0.0001 * Math.sin(count);
-  
+
           markers.push(
             <Marker
               key={`${spot.rua}-${key}`}
@@ -74,15 +94,14 @@ function ObjectsMap() {
               </Popup>
             </Marker>
           );
-  
+
           count++;
         }
       });
     });
-  
+
     return markers;
   };
-  
 
   return (
     <MapContainer center={position} zoom={15} className="map-container">
@@ -91,12 +110,10 @@ function ObjectsMap() {
         attribution="&copy; OpenStreetMap contributors"
       />
 
-      {/* Posição do usuário */}
       <Marker position={position}>
         <Popup>Você está aqui</Popup>
       </Marker>
 
-      {/* Vagas individuais como marcadores */}
       {generateVagaMarkers()}
     </MapContainer>
   );
